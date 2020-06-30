@@ -7,6 +7,8 @@ using UnityEngine.Timeline;
 using System;
 public class ImageDownload : MonoBehaviour
 {
+    string link = "http://likholetov.beget.tech";
+    public GameObject stickerContent;
     private ChoseDownloaderScript choseDownloader;
     private List<MarkerJsonLoader.Marker> markerInfo;
     int cnt = 0;
@@ -26,6 +28,12 @@ public class ImageDownload : MonoBehaviour
     {
         if (cnt<markerInfo.Count) 
         {
+            
+
+            StickerImage stickerDownloader = stickerContent.GetComponent<StickerImage>();
+            stickerDownloader.url = link + markerInfo[cnt].sticker_image;
+            stickerDownloader.StartDownload(Convert.ToString(markerInfo[cnt].id));
+
             string markerURL = markerInfo[cnt].image_set[0].url;
             Debug.LogWarning(markerURL);
             StartCoroutine(CreateImageTargetFromDownloadedTexture(markerURL));
@@ -40,7 +48,7 @@ public class ImageDownload : MonoBehaviour
     }
     IEnumerator CreateImageTargetFromDownloadedTexture(string url)
     {
-        using (UnityWebRequest uwr = UnityWebRequestTexture.GetTexture(url))
+        using (UnityWebRequest uwr = UnityWebRequestTexture.GetTexture(link+url))
         {
             yield return uwr.SendWebRequest();
 
@@ -74,13 +82,12 @@ public class ImageDownload : MonoBehaviour
                 objectTracker.ActivateDataSet(dataset);
                 SetToParent();
                 // TODO: add virtual content as child object(s)
-                choseDownloader.SelectDownload(cnt, trackableBehaviour); //Запустим скрипт по выбору сценария загрузки объекта для триггера
+                choseDownloader.SelectDownload(cnt,ref trackableBehaviour); //Запустим скрипт по выбору сценария загрузки объекта для триггера
                 
-
                 
-                cnt++;
-                Repeat();
             }
+            cnt++;
+            Repeat();
         }
     }
 }

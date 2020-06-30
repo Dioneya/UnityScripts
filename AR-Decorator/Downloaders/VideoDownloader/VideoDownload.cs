@@ -10,9 +10,10 @@ using Vuforia;
 public class VideoDownload : MonoBehaviour
 {
     public VideoPlayer video;
-    public string videoURL = @"https://dioneya.github.io/demo/videoplayback.mp4";
+    public string videoURL;
     private TrackableBehaviour mTrackableBehaviour;
-    void Start()
+
+    public void StartDownload() 
     {
         GameObject quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
         quad.GetComponent<Transform>().Rotate(90, 0, 0);

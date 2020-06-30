@@ -1,57 +1,47 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
-
-public class MarkerJsonLoader : MonoBehaviour
+using System;
+public class JsonLoader : MonoBehaviour
 {
-    //Классы
-    [System.Serializable]
-    public class Marker
-    {
-        public int id;
-        public string sticker_image;
-        public int institution_id;
-        public ImageSet image_set;
-        public bool is_active;
-        public string title;
-        public string description;
-        public string action_link;
+    QRScanner qrScn;
+    CacheMaker cacheMaker;
+    CacheChecker cacheChecker;
+    ImageDownload imageDownload;
 
-    }
 
-    [System.Serializable]
-    public class MarkerList
-    {
-        public List<Marker> data = new List<Marker>();
-    }
-
-    [System.Serializable]
-    public class ImageSet 
-    {
-        public List<Image> image_set = new List<Image>();
-    }
-
-    [System.Serializable]
-    public class Image
-    {
-        public string url;
-    }
-
-    //Глобальные переменные 
+    public InstitutionJsonLoader.InstitutionList institution;
     public string jsonUrl;
-    public MarkerList Markers;
+    public string id; 
+    private bool mustCahe = true;
 
-    //Локльные пременные
-    string path;
-    
-    
     void Start()
     {
-        StartCoroutine(LoadJson());
+        qrScn = GetComponent<QRScanner>();
+        cacheMaker = GetComponent<CacheMaker>();
+        cacheChecker = GetComponent<CacheChecker>();
+        imageDownload = GetComponent<ImageDownload>();
+        StartLoad();
     }
-    //Скачивание по ссылке Json
-    IEnumerator LoadJson() 
+
+    public void StartLoad() 
+    {
+        //var cacheText = cacheChecker.GetTextFromCache("json",Convert.ToString(qrScn.checkedID));
+        var cacheText = cacheChecker.GetTextFromCache("json", id);
+        if (cacheText != null) 
+        {
+            Debug.LogWarning("Кэш найден");
+            processJson(cacheText);
+        }
+        else 
+        {
+            Debug.LogWarning("Кэш не найден, выполнена загрузка");
+            jsonUrl = "http://likholetov.beget.tech/api/institution/" + id;//qrScn.checkedID;
+            StartCoroutine(LoadJson());
+        }
+    }
+
+    IEnumerator LoadJson()
     {
         WWW www = new WWW(jsonUrl);
         yield return www;
@@ -60,22 +50,36 @@ public class MarkerJsonLoader : MonoBehaviour
             processJson(www.text);
             UnityEngine.Debug.Log(www.text);
         }
-        else 
+        else
         {
             UnityEngine.Debug.Log("invalid url");
+            StartCoroutine(LoadJson());
         }
     }
 
-    private void processJson(string url) 
+    private void processJson(string url)
     {
-        Markers = JsonUtility.FromJson<MarkerList>(url);
- 
-        foreach (Marker marker in Markers.data)
+        institution = JsonUtility.FromJson<InstitutionJsonLoader.InstitutionList>(url);
+        if (mustCahe) 
         {
-            UnityEngine.Debug.Log("id "+ marker.id);
-            UnityEngine.Debug.Log("sticker_image " + marker.sticker_image);
+            cacheMaker.CacheText("json",Convert.ToString(institution.data.id),url);
         }
+        
+        StartCoroutine(Waiter());
     }
 
+    IEnumerator Waiter() 
+    {
+        yield return new WaitForSeconds(2);
+        if (institution.data.markers[0].image_set[0].url != null)
+        {
+            Debug.LogWarning(institution.data.markers[0].image_set[0].url);
+        }
+        else
+        {
+            Debug.LogWarning("Всё таки  не работает");
+        }
+        imageDownload.StartCreate();
 
+    }
 }
