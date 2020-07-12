@@ -12,18 +12,6 @@ public class AudioDownload : MonoBehaviour
         audioSource.playOnAwake = false;
         StartCoroutine(LoadAudioFromServer(url,AudioType.MPEG));
     }
-
-    /*IEnumerator LoadAudio() 
-    {
-        WWW www = new WWW(url);
-        AudioClip audio = www.GetAudioClip(false,true, AudioType.MPEG);
-        if (audio==null || audio.loadState==AudioDataLoadState.Unloaded) 
-        {
-            yield return new WaitForSeconds(0.1f);
-        }
-        audioSource.clip = audio;
-    }*/
-
     IEnumerator LoadAudioFromServer(string url,
                                 AudioType audioType)
     {

@@ -4,30 +4,27 @@ using UnityEngine;
 using System;
 public class JsonLoader : MonoBehaviour
 {
-    QRScanner qrScn;
+   
     CacheMaker cacheMaker;
     CacheChecker cacheChecker;
-    ImageDownload imageDownload;
+    SceneLoader sceneLoader;
 
-
-    public InstitutionJsonLoader.InstitutionList institution;
     public string jsonUrl;
     public string id; 
     private bool mustCahe = true;
 
     void Start()
     {
-        qrScn = GetComponent<QRScanner>();
         cacheMaker = GetComponent<CacheMaker>();
         cacheChecker = GetComponent<CacheChecker>();
-        imageDownload = GetComponent<ImageDownload>();
+        sceneLoader = GetComponent<SceneLoader>();
         StartLoad();
     }
 
     public void StartLoad() 
     {
         //var cacheText = cacheChecker.GetTextFromCache("json",Convert.ToString(qrScn.checkedID));
-        var cacheText = cacheChecker.GetTextFromCache("json", id);
+        var cacheText = cacheChecker.GetTextFromCache("json", "institution_"+id);
         if (cacheText != null) 
         {
             Debug.LogWarning("Кэш найден");
@@ -36,7 +33,7 @@ public class JsonLoader : MonoBehaviour
         else 
         {
             Debug.LogWarning("Кэш не найден, выполнена загрузка");
-            jsonUrl = "http://ar-decor.herokuapp.com/api/institution/" + id;//qrScn.checkedID;
+            jsonUrl = "http://likholetov.beget.tech/api/institution/" + id;//qrScn.checkedID;
             StartCoroutine(LoadJson());
         }
     }
@@ -53,32 +50,20 @@ public class JsonLoader : MonoBehaviour
         else
         {
             UnityEngine.Debug.Log("invalid url");
+            StartCoroutine(LoadJson());
         }
     }
 
     private void processJson(string url)
     {
-        institution = JsonUtility.FromJson<InstitutionJsonLoader.InstitutionList>(url);
+        GlobalVariables.institution = JsonUtility.FromJson<InstitutionJsonLoader.InstitutionList>(url);
+
+        Debug.LogWarning(GlobalVariables.institution.data.title);
         if (mustCahe) 
         {
-            cacheMaker.CacheText("json",Convert.ToString(institution.data.id),url);
+            cacheMaker.CacheText("institution_" + Convert.ToString(GlobalVariables.institution.data.id),"json",url);
         }
-        
-        StartCoroutine(Waiter());
-    }
 
-    IEnumerator Waiter() 
-    {
-        yield return new WaitForSeconds(4);
-        if (institution.data.markers[0].image_set[0].url != null)
-        {
-            Debug.LogWarning(institution.data.markers[0].image_set[0].url);
-        }
-        else
-        {
-            Debug.LogWarning("Всё таки  не работает данная хуетень");
-        }
-        imageDownload.StartCreate();
-
+        sceneLoader.LoadScene(sceneLoader.SceneNmb);
     }
 }

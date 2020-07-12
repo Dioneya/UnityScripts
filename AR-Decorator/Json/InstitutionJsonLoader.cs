@@ -14,7 +14,6 @@ public class InstitutionJsonLoader : MonoBehaviour
         public string image;
         public Type type;
         public bool is_active;
-        public int assigned_to_id;
         public GeoCoord geo_coords;
         public List<MarkerJsonLoader.Marker> markers;
     }
@@ -36,8 +35,8 @@ public class InstitutionJsonLoader : MonoBehaviour
     [System.Serializable]
     public class GeoCoord 
     {
-        public int latitude;
-        public int longitude;
+        public float latitude;
+        public float longitude;
     }
     //Глобальные переменные 
     public string jsonUrl;

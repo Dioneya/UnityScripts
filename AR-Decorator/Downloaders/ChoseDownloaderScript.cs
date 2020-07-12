@@ -1,20 +1,22 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Timeline;
+using System.IO;
+using System;
 using Vuforia;
 public class ChoseDownloaderScript : MonoBehaviour
 {
+    public GameObject test;
     JsonLoader jsonLoader;
     ImageDownload marker;
     string link = "http://likholetov.beget.tech";
 
-    public void SelectDownload(int indexOfMarker,ref DataSetTrackableBehaviour trackableBehaviour) 
+    public void SelectDownload(int indexOfMarker, ref DataSetTrackableBehaviour trackableBehaviour)
     {
-        
+
         jsonLoader = GetComponent<JsonLoader>();
         marker = GetComponent<ImageDownload>();
-        var obj_path = jsonLoader.institution.data.markers[indexOfMarker].a_r_object.object_path;
+        var obj_path = GlobalVariables.institution.data.markers[indexOfMarker].a_r_object.object_path;
 
         const int Image = 0;
         const int Video = 1;
@@ -23,7 +25,11 @@ public class ChoseDownloaderScript : MonoBehaviour
         const int AssetBundle = 4;
         const int Text = 5;
 
-        int key = jsonLoader.institution.data.markers[indexOfMarker].a_r_object.object_type.value;
+        int key = GlobalVariables.institution.data.markers[indexOfMarker].a_r_object.object_type.value;
+
+
+        var action_link = trackableBehaviour.gameObject.AddComponent<ActionLink>();
+        action_link.action_link = GlobalVariables.institution.data.markers[indexOfMarker].action_link;
 
         switch (key)
         {
@@ -32,7 +38,7 @@ public class ChoseDownloaderScript : MonoBehaviour
 
                     var image = trackableBehaviour.gameObject.AddComponent<ImgDownload>();
                     image.url = link + obj_path.url;
-                    image.StartDownload();
+                    image.StartDownload(indexOfMarker);
                     break;
                 }
 
@@ -40,13 +46,14 @@ public class ChoseDownloaderScript : MonoBehaviour
                 {
                     trackableBehaviour.gameObject.AddComponent<VideoTracker>();
                     var video = trackableBehaviour.gameObject.AddComponent<VideoDownload>();
-                    video.videoURL = link + obj_path.url;
-                    video.StartDownload();
+                    //video.videoURL = link + obj_path.url;
+                    video.StartDownload(indexOfMarker);
                     break;
                 }
 
             case Model:
                 {
+
                     GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
                     cube.transform.SetParent(trackableBehaviour.gameObject.transform);
                     break;
@@ -54,32 +61,37 @@ public class ChoseDownloaderScript : MonoBehaviour
 
             case Audio:
                 {
-                    
+
                     var audio = trackableBehaviour.gameObject.AddComponent<AudioDownload>();
                     trackableBehaviour.gameObject.AddComponent<AudioTracker>();
-                    audio.url = link + obj_path.url;
+                    string path_ar_object = Path.Combine("institution_" + Convert.ToString(GlobalVariables.institution.data.id), "marker_" + Convert.ToString(GlobalVariables.institution.data.markers[indexOfMarker].id), "arObject_" + GlobalVariables.institution.data.markers[indexOfMarker].a_r_object.id); // путь для папки кеширования объектам
+                    string fileName = Convert.ToString(GlobalVariables.institution.data.markers[indexOfMarker].a_r_object.id);
+                    var cacheFilePath = Path.Combine(Application.persistentDataPath, "Cache", path_ar_object, fileName + ".mp3");
+                    audio.url = "file://" + cacheFilePath;
                     audio.StartDownload();
                     break;
                 }
 
             case AssetBundle:
                 {
-                    //trackableBehaviour.gameObject.AddComponent<AssetDownload>(); // создание компонента скрипта для этого маркера
-                    GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                    cube.transform.SetParent(trackableBehaviour.gameObject.transform);
+                    var model = trackableBehaviour.gameObject.AddComponent<AssetDownload>();
+                    
+                    var object_path = Path.Combine("institution_" + Convert.ToString(GlobalVariables.institution.data.id), "marker_" + Convert.ToString(GlobalVariables.institution.data.markers[indexOfMarker].id), "arObject_" + GlobalVariables.institution.data.markers[indexOfMarker].a_r_object.id);
+                    string fileName = Convert.ToString(GlobalVariables.institution.data.markers[indexOfMarker].a_r_object.id);
+                    var cacheFilePath = Path.Combine(Application.persistentDataPath, "Cache", object_path, fileName);
+
+                    model.nameObj = GlobalVariables.institution.data.markers[indexOfMarker].a_r_object.object_path.name;
+                    model.url = "file://" + cacheFilePath;
+                    model.transform.SetParent(trackableBehaviour.gameObject.transform);
+                    model.StartLoad();
+                    test = trackableBehaviour.gameObject;
                     break;
-                    /*var model = trackableBehaviour.gameObject.GetComponent<AssetDownload>();
-
-                    var object_path = jsonLoader.institution.data.markers[indexOfMarker].a_r_object.object_path;
-
-                    model.nameObj = object_path.name;
-                    model.url = object_path.url;
-                    model.StartLoad();*/
                 }
             case Text:
                 {
-                    GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                    cube.transform.SetParent(trackableBehaviour.gameObject.transform);
+                    var text = trackableBehaviour.gameObject.AddComponent<TextDownload>();
+                    text.text = GlobalVariables.institution.data.markers[indexOfMarker].a_r_object.object_settings.text;
+                    text.StartDownload();
                     break;
                 }
         }

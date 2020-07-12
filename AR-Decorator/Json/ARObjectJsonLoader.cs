@@ -44,6 +44,7 @@ public class ARObjectJsonLoader : MonoBehaviour
     public class ObjectSettings 
     {
         public string color;
+        public string text;
     }
 
 
