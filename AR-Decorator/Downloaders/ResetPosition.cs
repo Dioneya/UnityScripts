@@ -18,9 +18,10 @@ using Vuforia;
 /// When implementing custom event handler behavior, consider inheriting from this class instead.
 /// </summary>
 /// 
-public class AudioTracker : MonoBehaviour
+public class ResetPosition : MonoBehaviour
 {
-    public AudioDownload audioDownload;
+    public GameObject model;
+    
     public enum TrackingStatusFilter
     {
         Tracked,
@@ -47,9 +48,9 @@ public class AudioTracker : MonoBehaviour
     GameObject sound;
     protected virtual void Start()
     {
-        audioDownload = GetComponent<AudioDownload>();
-        sound = GameObject.Find("Sound");
-
+        /*for (int i = 0; i < sound.transform.childCount; i++) {
+            sound.transform.GetChild(i).gameObject.SetActive(true);
+        }*/
         mTrackableBehaviour = GetComponent<TrackableBehaviour>();
 
         if (mTrackableBehaviour)
@@ -150,9 +151,12 @@ public class AudioTracker : MonoBehaviour
             // Enable canvas':
             foreach (var component in canvasComponents)
                 component.enabled = true;
-
-            audioDownload.StartPlayAudio();
-            sound.transform.GetChild(0).gameObject.SetActive(true);
+            if (model != null) 
+            {
+                model.SetActive(true);
+                model.transform.localPosition = new Vector3(0,-2.5f,0);
+            }
+                
         }
 
         if (OnTargetFound != null)
@@ -178,9 +182,9 @@ public class AudioTracker : MonoBehaviour
             // Disable canvas':
             foreach (var component in canvasComponents)
                 component.enabled = false;
-
-            sound.transform.GetChild(0).gameObject.SetActive(false);
-            audioDownload.StopPlayAudio();
+            if (model != null) 
+                model.SetActive(true);
+            
         }
 
         if (OnTargetLost != null)

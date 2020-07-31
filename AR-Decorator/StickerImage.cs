@@ -5,31 +5,43 @@ using UnityEngine.Networking;
 using UnityEngine.UI;
 using System.IO;
 using System;
+using TMPro;
 public class StickerImage : MonoBehaviour
 {
-    public GameObject sticker;
-
-    string link = "http://likholetov.beget.tech";
-
-    
+    [SerializeField] private GameObject StickerPrefab;
+    [SerializeField] private GameObject HintBlock;
+    [SerializeField] private RawImage HintImage;
+    [SerializeField] private TextMeshProUGUI HintDescription;
     // Start is called before the first frame update
     public void StartLoad(InstitutionJsonLoader.InstitutionList institution)
     {
         
         for (int i = 0; i < institution.data.markers.Count; i++ ) 
         {
-            //Создание и настройка стикера 
-            GameObject image = Instantiate(sticker);
+            #region Создание стикера и первоначальная настройка
+            GameObject image = Instantiate(StickerPrefab);
             image.SetActive(true);
             image.name = "Sticker Image " + institution.data.markers[i].id;
-            image.transform.SetParent(this.gameObject.transform);
+            image.transform.SetParent(transform);
+            #endregion
+
+            #region ShowHintImage
+            ShowHintImage showbigsticker = image.GetComponent<ShowHintImage>();
+            showbigsticker.HintImage = HintImage;
+            showbigsticker.HintBlock = HintBlock;
+            showbigsticker.HintDescription = HintDescription;
+            showbigsticker.text = institution.data.markers[i].description;
+            #endregion
+
+            #region Настройка RawImage
             RawImage rawImage = image.GetComponent<RawImage>();
             image.GetComponent<RectTransform>().localScale = new Vector3(1,1,1);
             image.transform.localPosition = new Vector3(image.transform.localPosition.x, image.transform.localPosition.y, 0);
             GlobalVariables.Images.Add(image);
-            string path_marker = Path.Combine("institution_" + Convert.ToString(institution.data.id), "marker_" + Convert.ToString(institution.data.markers[i].id)); //путь для папки кеширования маркерам
+            #endregion
 
-            var cacheFilePath = Path.Combine(Application.persistentDataPath, @"Cache", path_marker, "sticker" + ".png");
+            var cacheFilePath = GlobalVariables.CacheFilePath(i, GlobalVariables.Sticker);
+
             StartCoroutine(DownloadImage("file://"+cacheFilePath, rawImage));
         }
         

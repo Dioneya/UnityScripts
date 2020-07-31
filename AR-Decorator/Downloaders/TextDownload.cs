@@ -9,10 +9,7 @@ public class TextDownload : MonoBehaviour
 
     GameObject TextCanvas;
     public GameObject Text;
-    void Start() 
-    {
-        
-    }
+
     public void StartDownload()
     {
         TextCanvas = Resources.Load<GameObject>("Prefabs/TextCanvas");

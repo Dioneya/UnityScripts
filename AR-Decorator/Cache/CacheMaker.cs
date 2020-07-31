@@ -13,8 +13,8 @@ public class CacheMaker : MonoBehaviour
     public bool isAssetDone;
     public void CacheText(string folder, string fileName, string data)
     {
-        var cacheFilePath = Path.Combine(Application.persistentDataPath,@"Cache", folder, fileName+".txt");
-        var pathFolder = Path.Combine(Application.persistentDataPath, @"Cache", folder);
+        var cacheFilePath = Path.Combine(GlobalVariables.cachePathFolder, folder, fileName+".txt");
+        var pathFolder = Path.Combine(GlobalVariables.cachePathFolder, folder);
         if (!Directory.Exists(pathFolder)) 
         {
             Directory.CreateDirectory(pathFolder);
@@ -24,17 +24,23 @@ public class CacheMaker : MonoBehaviour
         File.WriteAllText(cacheFilePath, data);
     }
     #region Video
-    public void StartDownloadAndCacheVideo (string folder, string fileName, string url)
+    public void StartDownloadAndCacheVideo (string folder, string fileName, string url,bool isYoutube = false)
     {
-        
-        StartCoroutine(CacheVideo(folder, fileName, url));
+        if (isYoutube)
+        {
+            StartCoroutine(CacheYoutubeVideo(folder, fileName, url));
+        }
+        else 
+        {
+            StartCoroutine(CacheVideo(folder, fileName, url));
+        }
     }
     IEnumerator CacheVideo(string folder, string fileName, string url)
     {
         UnityWebRequest www = UnityWebRequest.Get(url);
         yield return www.SendWebRequest();
-        var cacheFilePath = Path.Combine(Application.persistentDataPath, "Cache", folder, fileName + ".mp4");
-        var pathFolder = Path.Combine(Application.persistentDataPath, "Cache", folder);
+        var cacheFilePath = Path.Combine(GlobalVariables.cachePathFolder, folder, fileName + ".mp4");
+        var pathFolder = Path.Combine(GlobalVariables.cachePathFolder, folder);
         if (!Directory.Exists(pathFolder))
         {
             Directory.CreateDirectory(pathFolder);
@@ -45,9 +51,22 @@ public class CacheMaker : MonoBehaviour
         }
         else
         {
+
             File.WriteAllBytes(cacheFilePath, www.downloadHandler.data);
         }
         isVideoDone = true;
+    }
+    IEnumerator CacheYoutubeVideo(string folder, string fileName, string url) 
+    {
+        yield return new WaitForSeconds(0.1f);
+        var cacheFilePath = Path.Combine(GlobalVariables.cachePathFolder, folder, fileName + ".mp4");
+        var pathFolder = Path.Combine(GlobalVariables.cachePathFolder, folder);
+        if (!Directory.Exists(pathFolder))
+        {
+            Directory.CreateDirectory(pathFolder);
+        }
+        //YoutubeScript.SaveVideoToDisk(url, cacheFilePath);
+        isVideoDone = true;  
     }
     #endregion
     #region Image
@@ -59,8 +78,8 @@ public class CacheMaker : MonoBehaviour
     {
         UnityWebRequest www = UnityWebRequest.Get(url);
         yield return www.SendWebRequest();
-        var cacheFilePath = Path.Combine(Application.persistentDataPath, @"Cache", folder, fileName + ".png");
-        var pathFolder = Path.Combine(Application.persistentDataPath, @"Cache", folder);
+        var cacheFilePath = Path.Combine(GlobalVariables.cachePathFolder, folder, fileName + ".png");
+        var pathFolder = Path.Combine(GlobalVariables.cachePathFolder, folder);
         if (!Directory.Exists(pathFolder))
         {
             Directory.CreateDirectory(pathFolder);
@@ -86,7 +105,7 @@ public class CacheMaker : MonoBehaviour
     {
         var request = UnityWebRequest.Get(url);
         yield return request.SendWebRequest();
-        var cacheFilePath = Path.Combine(Application.persistentDataPath, @"Cache\" + folder, fileName + ".txt");
+        var cacheFilePath = Path.Combine(GlobalVariables.cachePathFolder, folder, fileName + ".txt");
         if (request.isHttpError && request.isNetworkError)
         {
             Debug.LogErrorFormat("error request [{0}, {1}]", url, request.error);
@@ -107,8 +126,8 @@ public class CacheMaker : MonoBehaviour
     {
         UnityWebRequest www = UnityWebRequest.Get(url);
         yield return www.SendWebRequest();
-        var cacheFilePath = Path.Combine(Application.persistentDataPath, "Cache", folder, fileName + ".mp3");
-        var pathFolder = Path.Combine(Application.persistentDataPath, "Cache", folder);
+        var cacheFilePath = Path.Combine(GlobalVariables.cachePathFolder, folder, fileName + ".mp3");
+        var pathFolder = Path.Combine(GlobalVariables.cachePathFolder, folder);
         if (!Directory.Exists(pathFolder))
         {
             Directory.CreateDirectory(pathFolder);
@@ -148,8 +167,8 @@ public class CacheMaker : MonoBehaviour
             Debug.Log("Success");
             //handle.data
             //Construct path to save it
-            var cacheFilePath = Path.Combine(Application.persistentDataPath, "Cache", folder, fileName);
-            var pathFolder = Path.Combine(Application.persistentDataPath, @"Cache", folder);
+            var cacheFilePath = Path.Combine(GlobalVariables.cachePathFolder, folder, fileName);
+            var pathFolder = Path.Combine(GlobalVariables.cachePathFolder, folder);
 
             //Save
             Save(handle.data, cacheFilePath);

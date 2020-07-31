@@ -1,9 +1,5 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.Networking;
+﻿using UnityEngine;
 using System.IO;
-using System;
 public class ImgDownload : MonoBehaviour
 {
     public string url;
@@ -15,9 +11,7 @@ public class ImgDownload : MonoBehaviour
         quad.GetComponent<Transform>().Rotate(90, 0, 0);
         quad.transform.parent = this.transform;
 
-        string path_ar_object = Path.Combine("institution_" + Convert.ToString(GlobalVariables.institution.data.id), "marker_" + Convert.ToString(GlobalVariables.institution.data.markers[index].id), "arObject_" + GlobalVariables.institution.data.markers[index].a_r_object.id); // путь для папки кеширования объектам
-        string fileName = Convert.ToString(GlobalVariables.institution.data.markers[index].a_r_object.id);
-        var cacheFilePath = Path.Combine(Application.persistentDataPath, "Cache", path_ar_object, fileName + ".png");
+        var cacheFilePath = GlobalVariables.CacheFilePath(index, GlobalVariables.Image);
 
         Texture2D texture = new Texture2D(4, 4);
         texture.LoadImage(File.ReadAllBytes(cacheFilePath));
